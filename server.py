@@ -39,7 +39,7 @@ def suggestion(name):
 @app.route('/submit', methods=["POST"])
 def submit():
   data = request.form['data']
-  print request.form['name']
+  print (request.form['name'])
   cur = conn.cursor()
   cur.execute("INSERT into images2 (name, data, track, email, gid) VALUES (%s, %s, %s, %s, %s)", (request.form['name'], request.form['data'], request.form['track'], request.form['email'], request.form['gid']))
   conn.commit()
