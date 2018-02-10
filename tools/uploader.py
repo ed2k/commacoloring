@@ -2,8 +2,8 @@
 from db import conn
 import os, sys, json, base64
 
-TABLE = os.getenv("TABLE", 'data')
-assert TABLE == "data" or TABLE == "suggestions"
+#TABLE = os.getenv("TABLE", 'data')
+#assert TABLE == "data" or TABLE == "suggestions"
 
 if __name__ == "__main__":
   for f in sys.argv[1:]:
@@ -11,9 +11,10 @@ if __name__ == "__main__":
     print "uploading", f, "as", bn
     dat = "data:image/png;base64,"+base64.b64encode(open(f).read())
 
-    cur = conn.cursor()
-    cur.execute("INSERT into "+TABLE+" (name, data) VALUES (%s, %s)", (bn, dat))
-    conn.commit()
-    cur.close()
+    #cur = conn.cursor()
+    #cur.execute("INSERT into "+TABLE+" (name, data) VALUES (%s, %s)", (bn, dat))
+    file(bn+'.b64','w').write(dat)
+    #conn.commit()
+    #cur.close()
 
 
