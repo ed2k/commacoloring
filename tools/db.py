@@ -1,7 +1,13 @@
 # connect to the database
+from __future__ import print_function
 import os
 #import psycopg2
-import urllib.parse as urlparse
+#import urllib.parse as urlparse
+import urlparse
+import sys
+
+def perr(s):
+  print(s, file=sys.stderr)
 
 urlparse.uses_netloc.append("postgres")
 #url = urlparse.urlparse(os.environ["HEROKU_POSTGRESQL_ORANGE_URL"])
@@ -23,42 +29,43 @@ class DB2DIR:
     return self
 
   def execute(self, *args):
-    if len(args) == 1: cmd = args[0]
-    elif len(args) == 2: cmd = args[0].format(args[1])
-    if cmd == "SELECT name, data FROM data OFFSET floor(random() * (SELECT count(*) FROM data)) LIMIT 1":
+    if args[0] == "SELECT name, data FROM data OFFSET floor(random() * (SELECT count(*) FROM data)) LIMIT 1":
       return self.random_image()
-    elif cmd[:11]=="INSERT into":
-      idx = cmd.find('VALUES (')
-      return self.insert(cmd[idx+8:-1])
+    elif args[0].find('SELECT') > -1:
+      return self.get_mask(args[1])
+    elif args[0][:11]=="INSERT into":
+      cmd = args[1]
+      return self.insert(cmd)
+
+  def get_mask(self, f):
+    self._data = [[file('mask/'+f[0]).read()]]
+    self._cursor = 0
 
   def insert(self, cmd):
-    f = cmd.split(',')
-    print(f)
+    f = cmd
     name = f[0].strip()
     data = f[1].strip()
-    track = f[2].strip()
-    email = f[3].strip()
-    gid = f[4].strip()
+    file('mask/'+name,'w').write(data)
 
   def commit(self):
-    self.commit = 1
+    self.cmd = 'commit'
   def close(self):
-    self.close = 1
+    self.cmd = 'close'
 
   def fetchone(self):
-    name,data = (self._data[self._cursor])
+    i = self._cursor
     self._cursor += 1
-    return (name, data)
+    return self._data[i]
 
   def random_image(self):
     name = '001.jpg.b64'
-    self._data = [(name, file(name).read())]
+    self._data = [(name, file('orig/'+name).read())]
 
   def _encode(self, f):
     dat = "data:image/png;base64,"+base64.b64encode(open(f).read())
 
 conn = DB2DIR()
-print (url)
+perr(url)
 conn.connect(
     database=url.path[1:],
     user=url.username,
